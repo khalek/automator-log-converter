@@ -60,7 +60,7 @@ public class XMLResultFormatter implements XMLConstants {
 
     /** constant for unnnamed testsuites/cases */
     private static final String UNKNOWN = "unknown";
-
+    
     private static DocumentBuilder getDocumentBuilder() {
         try {
             return DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -93,9 +93,12 @@ public class XMLResultFormatter implements XMLConstants {
      * Where to write the log to.
      */
     private OutputStream out;
+    
+    private int testErrorCount;
 
     /** No arg constructor. */
     public XMLResultFormatter() {
+    	testErrorCount = 0;
     }
 
     /** {@inheritDoc}. */
@@ -169,9 +172,9 @@ public class XMLResultFormatter implements XMLConstants {
      *             on error.
      */
     public void endTestSuite(String name, long time) throws BuildException {
-        // rootElement.setAttribute(ATTR_TESTS, "" + suite.runCount());
-        // rootElement.setAttribute(ATTR_FAILURES, "" + suite.failureCount());
-        // rootElement.setAttribute(ATTR_ERRORS, "" + suite.errorCount());
+        rootElement.setAttribute(ATTR_TESTS, "" + rootElement.getElementsByTagName(TESTCASE).getLength());
+        rootElement.setAttribute(ATTR_FAILURES, "" + failedTests.size());
+        rootElement.setAttribute(ATTR_ERRORS, "" + testErrorCount);
         rootElement.setAttribute(ATTR_TIME, "" + (time / ONE_SECOND));
         if (out != null) {
             Writer wri = null;
@@ -286,6 +289,7 @@ public class XMLResultFormatter implements XMLConstants {
      */
     public void addError(TestIdentifier test, Throwable t) {
         formatError(ERROR, test, t);
+        testErrorCount++;
     }
 
     private void formatError(String type, TestIdentifier test, Throwable t) {
